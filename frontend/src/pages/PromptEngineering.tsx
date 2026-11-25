@@ -349,7 +349,7 @@ export function PromptEngineering() {
         />
       ) : null}
 
-      {activeTab === "tools" ? <ToolsPanel autoOpen={autoOpen} /> : null}
+      {activeTab === "tools" ? <ToolsPanel /> : null}
 
       {activeTab === "test-cases" ? (
         <CatalogTable<TestCase>

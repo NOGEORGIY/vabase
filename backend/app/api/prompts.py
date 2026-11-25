@@ -44,11 +44,6 @@ def _tokens(text: str) -> list[str]:
 
 
 def _score_prompt(prompt: Prompt, query_tokens: set[str]) -> tuple[float, list[str]]:
-    """Lightweight lexical relevance used before the vector search lands.
-
-    The agents subsystem will reuse this contract (query in, ranked tools/prompts
-    out) and can swap the implementation for embeddings later.
-    """
 
     weighted_fields = (
         (prompt.name, 3.0),

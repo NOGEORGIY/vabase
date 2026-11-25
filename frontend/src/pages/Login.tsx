@@ -2,12 +2,12 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
-  Check,
   Code2,
+  FileText,
   ShieldCheck,
   Sparkles,
   UserRound,
-  Workflow,
+  Users,
   Wrench,
 } from "lucide-react";
 import { useApi, useDocumentTitle } from "../api/hooks";
@@ -34,13 +34,13 @@ export function Login() {
   const [demoLoading, setDemoLoading] = useState<string | null>(null);
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/agents" replace />;
   }
 
   const signIn = async (nextEmail: string, nextPassword: string) => {
     setError(null);
     await login(nextEmail, nextPassword);
-    navigate("/", { replace: true });
+    navigate("/agents", { replace: true });
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -78,58 +78,57 @@ export function Login() {
 
         <div className="login-hero-content">
           <h1 className="login-title">
-            Соберите процесс.
+            Инструменты.
             <br />
-            Подключите <em>агента</em>.
+            Промпты. <em>Агенты</em>.
           </h1>
           <p className="login-lead">
-            Vabase — низкокодовая платформа конструирования решений. Собирайте сценарии
-            из готовых блоков, подключайте сервисы и готовьте почву для автономных
-            ИИ-агентов, которые выбирают инструменты без доработки ядра.
+            Vabase — платформа для работы с инструментами и промптами ИИ-агентов.
+            Описывайте действия, проверяйте схемы и готовьте инструкции для задач.
           </p>
 
           <div className="login-points">
             <div className="login-point">
               <span className="dot">
-                <Check />
-              </span>
-              <span>Проекты, сервисы, промпты и информационная модель — в одном контуре</span>
-            </div>
-            <div className="login-point">
-              <span className="dot">
                 <Wrench />
               </span>
-              <span>Реестр инструментов с версиями, проверкой манифеста и подтверждением действий</span>
+              <span>Реестр инструментов с версиями, проверкой схемы и публикацией</span>
             </div>
             <div className="login-point">
               <span className="dot">
-                <Workflow />
+                <FileText />
               </span>
-              <span>Каркас готов к подключению вкладки «Ассистенты» отдельным модулем</span>
+              <span>Промпты и инструкции для типовых задач</span>
+            </div>
+            <div className="login-point">
+              <span className="dot">
+                <Users />
+              </span>
+              <span>Три демо-роли: аналитик, администратор, разработчик</span>
             </div>
           </div>
         </div>
 
         <div className="login-preview">
           <div className="preview-card">
-            <div className="label">Демо-контур</div>
-            <div className="value">3 проекта</div>
-            <div className="tiny muted" style={{ marginTop: 4 }}>
-              с наполненными каталогами
-            </div>
-          </div>
-          <div className="preview-card">
-            <div className="label">Реестр инструментов</div>
-            <div className="value">7 инструментов</div>
+            <div className="label">Инструменты</div>
+            <div className="value">Реестр</div>
             <div className="tiny muted" style={{ marginTop: 4 }}>
               HTTP, MCP, вебхук, встроенный
             </div>
           </div>
           <div className="preview-card">
-            <div className="label">Подсистема агентов</div>
-            <div className="value">Скоро</div>
+            <div className="label">Промпты</div>
+            <div className="value">Шаблоны</div>
             <div className="tiny muted" style={{ marginTop: 4 }}>
-              контракты и данные готовы
+              инструкции для задач
+            </div>
+          </div>
+          <div className="preview-card">
+            <div className="label">Доступ</div>
+            <div className="value">3 роли</div>
+            <div className="tiny muted" style={{ marginTop: 4 }}>
+              демо-аккаунты
             </div>
           </div>
         </div>

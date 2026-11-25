@@ -68,24 +68,6 @@ def seed_demo(db: Session) -> bool:
             avatar_color="#1a4bff",
             created_at=now - timedelta(days=30),
         ),
-        User(
-            id=_id(),
-            email="a.sokolova@vabase.ru",
-            full_name="Анна Соколова",
-            role="admin",
-            password_hash=password_hash,
-            avatar_color="#7c3aed",
-            created_at=now - timedelta(days=40),
-        ),
-        User(
-            id=_id(),
-            email="m.orlov@vabase.ru",
-            full_name="Максим Орлов",
-            role="developer",
-            password_hash=password_hash,
-            avatar_color="#0f9d76",
-            created_at=now - timedelta(days=35),
-        ),
     ]
     db.add_all(users)
     analyst = users[0]
@@ -100,24 +82,6 @@ def seed_demo(db: Session) -> bool:
             owner_id=analyst.id,
             created_at=now - timedelta(hours=3),
             updated_at=now - timedelta(minutes=40),
-        ),
-        Project(
-            id=_id(),
-            name="Поддержка клиентов",
-            description="Обработка обращений и заявок через ассистента",
-            status="active",
-            owner_id=analyst.id,
-            created_at=now - timedelta(days=2),
-            updated_at=now - timedelta(hours=5),
-        ),
-        Project(
-            id=_id(),
-            name="Закупки и снабжение",
-            description="Согласование заявок на закупку и контроль поставок",
-            status="draft",
-            owner_id=analyst.id,
-            created_at=now - timedelta(days=5),
-            updated_at=now - timedelta(days=1),
         ),
     ]
     db.add_all(projects)
@@ -152,27 +116,10 @@ def seed_demo(db: Session) -> bool:
         ),
         Service(
             id=_id(),
-            name="CRM Sync",
-            description="Двусторонняя синхронизация контактов и сделок",
-            url="https://crm.example.ru/api/v2",
-            service_type="webhook",
-            status="active",
-            project_id=main_project.id,
-        ),
-        Service(
-            id=_id(),
             name="Telegram Bot",
             description="Отправка уведомлений в рабочие чаты",
             url="https://api.telegram.org/bot",
             service_type="webhook",
-            status="active",
-        ),
-        Service(
-            id=_id(),
-            name="1С:Заказы",
-            description="Выгрузка заказов из учётной системы",
-            url="https://erp.example.ru/hs/orders",
-            service_type="mcp",
             status="active",
         ),
         Service(

@@ -1,6 +1,5 @@
 import { useMemo, useState, type FormEvent } from "react";
 import {
-  Bot,
   Pencil,
   Plus,
   ShieldCheck,
@@ -67,11 +66,11 @@ const EMPTY_FORM: ToolForm = {
   input_schema: DEFAULT_SCHEMA,
 };
 
-export function ToolsPanel({ autoOpen }: { autoOpen?: boolean }) {
+export function ToolsPanel() {
   const toast = useToast();
   const { data, loading, error, reload } = useApi<ListResponse<Tool>>("/tools?limit=300");
   const [search, setSearch] = useState("");
-  const [modalOpen, setModalOpen] = useState(Boolean(autoOpen));
+  const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Tool | null>(null);
   const [form, setForm] = useState<ToolForm>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
@@ -306,25 +305,12 @@ export function ToolsPanel({ autoOpen }: { autoOpen?: boolean }) {
 
   return (
     <>
-      <div className="tool-note">
-        <span className="icon">
-          <Bot />
-        </span>
-        <div>
-          <div className="t">Реестр инструментов — основа подсистемы агентов</div>
-          <div className="s">
-            Агент получит только инструменты, опубликованные здесь. Схема параметров проверяется
-            до вызова, а флаг «Требуется подтверждение» остановит опасный шаг.
-          </div>
-        </div>
-      </div>
-
       <div className="card catalog-card">
         <div className="card-head">
           <div>
-            <h2 className="card-title">Инструменты</h2>
+            <h2 className="card-title">Реестр инструментов</h2>
             <p className="card-subtitle">
-              {tools.length} в реестре · опубликовано{" "}
+              {tools.length} инструментов · опубликовано{" "}
               {tools.filter((tool) => tool.status === "published" || tool.status === "active").length}
             </p>
           </div>

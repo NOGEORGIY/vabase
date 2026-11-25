@@ -158,11 +158,6 @@ class TestCase(Base, TimestampMixin):
 
 
 class Tool(Base, TimestampMixin):
-    """Tool registry entry.
-
-    This registry is the foundation the future agents subsystem will read from:
-    an agent receives only tools published here and permitted to it.
-    """
 
     __tablename__ = "tools"
 

@@ -232,9 +232,10 @@ svg {
 }
 
 .topbar {
-  height: 112px;
+  height: 92px;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 18px;
 }
 

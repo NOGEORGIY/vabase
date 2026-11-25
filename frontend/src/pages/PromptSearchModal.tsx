@@ -39,8 +39,8 @@ export function PromptSearchModal({
     <Modal
       open={open}
       onClose={onClose}
-      title="Поиск по описанию задачи"
-      subtitle="Подбор промпта под текст задачи — тот же контракт, который будет использовать диспетчер агентов"
+      title="Подбор промпта"
+      subtitle="Опишите задачу — покажем подходящие промпты"
       wide
       footer={
         <Button variant="secondary" onClick={onClose}>
@@ -60,8 +60,7 @@ export function PromptSearchModal({
             onChange={(event) => setQuery(event.target.value)}
           />
           <span className="field-hint">
-            Лексический поиск по названию, описанию, теме и инструментам. Позже заменяется
-            векторным без изменения API.
+            Поиск по названию, описанию и связанным инструментам.
           </span>
         </div>
         <div className="row">
