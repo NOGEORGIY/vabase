@@ -1,16 +1,3 @@
-"""Scaffold for the AI-agents subsystem.
-
-The module deliberately contains no agent runtime yet. It fixes the contract and
-the vocabulary the future implementation plugs into, so the rest of the platform
-does not need to change:
-
-* the roadmap endpoint feeds the "Ассистенты" placeholder screen;
-* the routes below are reserved and return ``501 NOT_IMPLEMENTED``;
-* the tool registry (``/api/v1/tools``) is already the source of truth for the
-  tools an agent will be allowed to call.
-
-Implementation order is described in ``README.md`` (section "Вкладка агентов").
-"""
 
 from __future__ import annotations
 
