@@ -6,23 +6,11 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from app.api import (
-    agents,
-    auth,
-    catalogs,
-    info_model,
-    interpreted,
-    metrics,
-    projects,
-    prompts,
-    search,
-    tools,
-)
+from app.api import agents, auth, prompts, tools
 from app.config import settings
 from app.database import SessionLocal, engine, init_db
 from app.errors import register_error_handlers
 from app.seed import seed_demo
-from backend.app.tools import TOOLS_MAP, TOOLS_SCHEMAS
 
 
 @asynccontextmanager
@@ -38,8 +26,8 @@ app = FastAPI(
     title="Vabase API",
     version=settings.app_version,
     description=(
-        "Прототип низкокодовой платформы Vabase. Содержит каркас платформы и "
-        "заготовку подсистемы ИИ-агентов (реестр инструментов, контракты, роадмап)."
+        "Прототип Vabase: инструменты, промпты и агенты. "
+        "Реестр инструментов и промпты доступны через API."
     ),
     lifespan=lifespan,
     docs_url="/api/docs",
@@ -61,28 +49,8 @@ app.add_middleware(
 api_router = APIRouter(prefix=settings.api_prefix)
 
 api_router.include_router(auth.router)
-api_router.include_router(projects.router)
-api_router.include_router(catalogs.services_router)
-api_router.include_router(catalogs.components_router)
-api_router.include_router(catalogs.entities_router)
 api_router.include_router(prompts.router)
-api_router.include_router(prompts.elements_router)
-api_router.include_router(prompts.themes_router)
-api_router.include_router(prompts.tasks_router)
-api_router.include_router(prompts.variables_router)
-api_router.include_router(prompts.test_cases_router)
 api_router.include_router(tools.router)
-api_router.include_router(info_model.categories_router)
-api_router.include_router(info_model.characteristics_router)
-api_router.include_router(info_model.scales_router)
-api_router.include_router(info_model.values_router)
-api_router.include_router(info_model.interpreted_values_router)
-api_router.include_router(info_model.constraints_router)
-api_router.include_router(interpreted.dictionaries_router)
-api_router.include_router(interpreted.libraries_router)
-api_router.include_router(interpreted.library_classes_router)
-api_router.include_router(metrics.router)
-api_router.include_router(search.router)
 api_router.include_router(agents.router)
 
 app.include_router(api_router)

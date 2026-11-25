@@ -727,26 +727,7 @@ class SearchOut(BaseModel):
     groups: list[SearchGroup]
 
 
-# ------------------------------------------------------------------------- agents
-
-
-class RoadmapItem(BaseModel):
-    id: str
-    title: str
-    description: str
-    status: str
-    footprint: str = ""
-
-
-class AgentRoadmap(BaseModel):
-    module: str = "agents"
-    status: str = "planned"
-    title: str
-    summary: str
-    items: list[RoadmapItem]
-    endpoints: list[str]
-    data_model: list[str]
-    ready_building_blocks: list[str]
+# ------------------------------------------------------------------------- errors
 
 
 class ErrorBody(BaseModel):

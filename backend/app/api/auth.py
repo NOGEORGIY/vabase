@@ -19,19 +19,19 @@ DEMO_ACCOUNTS = [
         "role": "analyst",
         "title": "Аналитик",
         "email": "g.rasputin@vabase.ru",
-        "description": "Собирает сценарии, настраивает агентов и промпты",
+        "description": "Работает с промптами и инструментами",
     },
     {
         "role": "admin",
         "title": "Администратор",
         "email": "a.sokolova@vabase.ru",
-        "description": "Управляет правами, инструментами и лимитами",
+        "description": "Управляет доступами и публикацией",
     },
     {
         "role": "developer",
         "title": "Разработчик интеграций",
         "email": "m.orlov@vabase.ru",
-        "description": "Подключает адаптеры, MCP-серверы и вебхуки",
+        "description": "Подключает HTTP и MCP-инструменты",
     },
 ]
 

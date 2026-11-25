@@ -67,37 +67,7 @@ def test_login_error_has_unified_format(client: TestClient) -> None:
     assert "message" in body
 
 
-def test_projects_and_demo_seed(client: TestClient, auth_headers: dict[str, str]) -> None:
-    response = client.get("/api/v1/projects", headers=auth_headers)
-    assert response.status_code == 200
-    assert response.json()["total"] == 3
-    assert response.json()["items"][0]["name"] == "рпк-тест"
-
-
-def test_create_update_delete_project(client: TestClient, auth_headers: dict[str, str]) -> None:
-    created = client.post(
-        "/api/v1/projects",
-        headers=auth_headers,
-        json={"name": "Автотест", "description": "Проверка CRUD"},
-    )
-    assert created.status_code == 201, created.text
-    project_id = created.json()["id"]
-
-    updated = client.patch(
-        f"/api/v1/projects/{project_id}",
-        headers=auth_headers,
-        json={"status": "active"},
-    )
-    assert updated.status_code == 200
-    assert updated.json()["status"] == "active"
-
-    deleted = client.delete(f"/api/v1/projects/{project_id}", headers=auth_headers)
-    assert deleted.status_code == 204
-
-
-def test_tools_registry_is_ready_for_agents(
-    client: TestClient, auth_headers: dict[str, str]
-) -> None:
+def test_tools_registry(client: TestClient, auth_headers: dict[str, str]) -> None:
     response = client.get("/api/v1/tools", headers=auth_headers)
     assert response.status_code == 200
     assert response.json()["total"] >= 7
@@ -138,42 +108,39 @@ def test_prompt_search_by_task(client: TestClient, auth_headers: dict[str, str])
     assert data["items"][0]["score"] > 0
 
 
-def test_agents_roadmap_and_stub(client: TestClient, auth_headers: dict[str, str]) -> None:
-    roadmap = client.get("/api/v1/agents/roadmap", headers=auth_headers)
-    assert roadmap.status_code == 200
-    payload = roadmap.json()
-    assert payload["status"] == "planned"
-    assert any(item["status"] == "ready" for item in payload["items"])
-
-    stub = client.get("/api/v1/agents", headers=auth_headers)
-    assert stub.status_code == 501
-    assert stub.json()["code"] == "NOT_IMPLEMENTED"
-
-
-def test_metrics_and_search(client: TestClient, auth_headers: dict[str, str]) -> None:
-    metrics = client.get("/api/v1/metrics/summary", headers=auth_headers)
-    assert metrics.status_code == 200
-    assert metrics.json()["tools"] >= 7
-    assert metrics.json()["runs"] == 0
-
-    search = client.get("/api/v1/search", headers=auth_headers, params={"q": "заявк"})
-    assert search.status_code == 200
-    assert search.json()["total"] > 0
-
-
-def test_dictionary_type_filter(client: TestClient, auth_headers: dict[str, str]) -> None:
-    response = client.get(
-        "/api/v1/interpreted-data/dictionaries",
+def test_prompt_crud(client: TestClient, auth_headers: dict[str, str]) -> None:
+    created = client.post(
+        "/api/v1/prompts",
         headers=auth_headers,
-        params={"dict_type": "file"},
+        json={"name": "Промпт автотеста", "description": "Проверка CRUD"},
     )
-    assert response.status_code == 200
-    items = response.json()["items"]
-    assert items
-    assert all(item["dict_type"] == "file" for item in items)
+    assert created.status_code == 201, created.text
+    prompt_id = created.json()["id"]
+
+    updated = client.patch(
+        f"/api/v1/prompts/{prompt_id}",
+        headers=auth_headers,
+        json={"status": "active"},
+    )
+    assert updated.status_code == 200
+    assert updated.json()["status"] == "active"
+
+    deleted = client.delete(f"/api/v1/prompts/{prompt_id}", headers=auth_headers)
+    assert deleted.status_code == 204
+
+
+def test_agents_are_stubbed(client: TestClient, auth_headers: dict[str, str]) -> None:
+    for method, path in (
+        ("get", "/api/v1/agents"),
+        ("post", "/api/v1/agents"),
+        ("post", "/api/v1/runs"),
+    ):
+        response = getattr(client, method)(path, headers=auth_headers)
+        assert response.status_code == 501, path
+        assert response.json()["code"] == "NOT_IMPLEMENTED"
 
 
 def test_unauthorized(client: TestClient) -> None:
-    response = client.get("/api/v1/projects")
+    response = client.get("/api/v1/tools")
     assert response.status_code == 401
     assert response.json()["code"] == "UNAUTHORIZED"
