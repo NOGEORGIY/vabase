@@ -1,104 +1,93 @@
 from __future__ import annotations
 
-from backend.app.tools import TOOLS_MAP, TOOLS_SCHEMAS
-from backend.app.services import LLMClient
-import os
-import json
+from contextlib import asynccontextmanager
 
-from dotenv import load_dotenv
-load_dotenv()
+from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
-credentials = os.getenv('GIGACHAT_API_TOKEN')
-if not credentials:
-    raise ValueError("Переменная окружения GIGACHAT_API_TOKEN не найдена или пуста.")
-model = "GigaChat-2"
+from app.api import agents, auth, prompts, tools
+from app.config import settings
+from app.database import SessionLocal, engine, init_db
+from app.errors import register_error_handlers
+from app.seed import seed_demo
 
-SYSTEM_PROMPT = """
 
-Ты помощник SRE-инженера. Твоя задача — находить причины ошибок в коде проекта.
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    init_db()
+    if settings.seed_demo:
+        with SessionLocal() as db:
+            seed_demo(db)
+    yield
 
-Если пользователь прислал traceback:
 
-1. Определи тип исключения.
-2. Найди в traceback файл, номер строки и имя функции.
-3. Не пытайся искать весь текст traceback в исходниках.
-4. Используй grep, чтобы найди функцию или соответствующий участок кода.
+app = FastAPI(
+    title="Vabase API",
+    version=settings.app_version,
+    description=(
+        "Прототип Vabase: инструменты, промпты и агенты. "
+        "Реестр инструментов и промпты доступны через API."
+    ),
+    lifespan=lifespan,
+    docs_url="/api/docs",
+    redoc_url=None,
+    openapi_url="/api/openapi.json",
+)
 
-Если пользователь НЕ прислал traceback, а указал только файл и тип ошибки:
-1. Ищи в указанном файле потенциально опасные места под эту ошибку (например, для ZeroDivisionError ищи операции деления '/' или '%', для KeyError — обращения по ключу '[') либо список функций через 'def '.
-2. Изучи найденные строки и объясни причину ошибки.
-3. Предложи исправление.
+register_error_handlers(app)
 
-Если информации недостаточно, выполни дополнительный поиск.
-Не выдумывай результаты. Опирайся только на найденный код
-"""
+origins = [origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins or ["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-def run_agent(llm: LLMClient, task: str, max_steps: int = 8) -> str:
-    messages = [
-        {"role":"system", "content":SYSTEM_PROMPT},
-        {"role":"user", "content":task},
-    ]
-    print(f"\n[USER] {task}")
-    for step in range(1, max_steps + 1):
-        print(f"\n{'=' * 20} ШАГ {step} {'=' * 20}")
-        msg = llm.chat(messages, functions=TOOLS_SCHEMAS)
-        messages.append(msg)
+api_router = APIRouter(prefix=settings.api_prefix)
 
-        # что вернула модель
-        content = msg.get("content", "")
-        if content:
-            print(f"\n[LLM]\n{content}")
+api_router.include_router(auth.router)
+api_router.include_router(prompts.router)
+api_router.include_router(tools.router)
+api_router.include_router(agents.router)
 
-        function_call = msg.get("function_call")
+app.include_router(api_router)
 
-        # Модель решила не вызывать инструменты
-        if not function_call:
-            print("\n[AGENT] Работа завершена")
-            return content
 
-        calls = function_call if isinstance(function_call, list) else [function_call]
+@app.get("/healthz", tags=["system"])
+def healthz() -> dict:
+    components: dict[str, str] = {}
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        components["database"] = "ok"
+    except Exception:  # noqa: BLE001 - health endpoint reports, never raises
+        components["database"] = "unavailable"
 
-        # Обрабатываем запросы на вызов инструментов
-        for call in calls:
-            name = call["name"]
-            args = call.get("arguments", {})
-            if isinstance(args, list):
-                args = json.loads(args)
+    try:
+        import redis
 
-            print(f"\n[TOOL CALL] {name}")
-            print(f"[ARGS] {args}")
-            func = TOOLS_MAP[name]
-            if func is None:
-                result = f"Ошибка: инструмента {name} нет"
-            else:
-                try:
-                    result = func(**args)
-                except Exception as e:
-                    result = f"Ошибка: {e}"
-            print(f"\n[TOOL RESULT]\n{result}")
-            messages.append({
-                "role": "tool",
-                "name": name,
-                "content": json.dumps({"result": str(result)}, ensure_ascii=False),
-            })
-    print("\n[AGENT] Превышен лимит шагов")
-    return "Остановился: превышен лимит шагов"
+        client = redis.Redis.from_url(settings.redis_url, socket_connect_timeout=1)
+        client.ping()
+        components["redis"] = "ok"
+    except Exception:  # noqa: BLE001 - redis is optional for the prototype
+        components["redis"] = "optional"
 
-def read_task():
-    print("Опиши проблему (для завершения нажми Enter на пустой строке):")
-    lines = []
-    while True:
-        line = input()
-        if not line:
-            break
-        lines.append(line)
-    return "\n".join(lines)
+    healthy = components["database"] == "ok"
+    return {
+        "status": "ok" if healthy else "degraded",
+        "version": settings.app_version,
+        "components": components,
+    }
 
-if __name__ == "__main__":
-    llm = LLMClient(credentials, model)
-    llm.get_balance()
-    task = read_task()
-    answer = run_agent(llm, task)
-    print("\nОтвет агента:")
-    print(answer)
-    llm.get_balance()
+
+@app.get("/", tags=["system"])
+def root() -> dict:
+    return {
+        "name": "Vabase API",
+        "version": settings.app_version,
+        "docs": "/api/docs",
+        "health": "/healthz",
+    }

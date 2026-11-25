@@ -1,5 +1,6 @@
 import { Bot } from "lucide-react";
 import { useDocumentTitle } from "../api/hooks";
+import {Field, Input} from "../ui/primitives";
 
 export function Agents() {
   useDocumentTitle("Агенты");
@@ -22,6 +23,14 @@ export function Agents() {
       <h1 className="page-title" style={{ fontSize: 34 }}>
         Агенты
       </h1>
+        <Field label="Системный промпт" required hint="Системный промпт">
+                <Input
+                  value={form.name}
+                  autoFocus
+                  placeholder="crm.update_status"
+                  onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                />
+        </Field>
       <p style={{ color: "var(--muted)", fontSize: 15 }}>В разработке</p>
     </div>
   );
