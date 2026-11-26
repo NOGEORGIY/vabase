@@ -35,9 +35,7 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-vabase}:${POSTGRES_PASSWORD:-vabase}@db:5432/${POSTGRES_DB:-vabase}
       REDIS_URL: redis://redis:6379/0
-      SEED_DEMO: ${SEED_DEMO:-true}
-      DEMO_PASSWORD: ${DEMO_PASSWORD:-vabase}
-      CORS_ORIGINS: "*"
+      GIGACHAT_API_TOKEN: ${GIGACHAT_API_TOKEN:-}
     ports:
       - "${API_PORT:-8001}:8000"
     depends_on:

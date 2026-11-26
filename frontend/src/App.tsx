@@ -1,69 +1,57 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { type ReactNode } from "react";
-import { useAuth } from "./context/AuthContext";
-import { AppLayout } from "./layout/AppLayout";
-import { Brand } from "./layout/Logo";
-import { Agents } from "./pages/Agents";
-import { Login } from "./pages/Login";
-import { Prompts } from "./pages/Prompts";
-import { ToolsPage } from "./pages/ToolsPage";
+import { useState } from "react";
+import { Agents } from "./Agents";
+import { Tools } from "./Tools";
+import { Prompts } from "./Prompts";
 
-function Protected({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+type Tab = "agents" | "tools" | "prompts";
 
-  if (loading) {
-    return (
-      <div className="app-shell" style={{ display: "block" }}>
-        <div
-          style={{
-            minHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 18,
-          }}
-        >
-          <Brand />
-          <span className="spinner dark" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-}
-
-export function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-
-      <Route
-        element={
-          <Protected>
-            <AppLayout />
-          </Protected>
-        }
-      >
-        <Route index element={<Navigate to="/agents" replace />} />
-        <Route path="agents" element={<Agents />} />
-        <Route path="tools" element={<ToolsPage />} />
-        <Route path="prompts" element={<Prompts />} />
-        <Route path="*" element={<Navigate to="/agents" replace />} />
-      </Route>
-    </Routes>
-  );
-}
+const tabs: { id: Tab; label: string }[] = [
+	{ id: "agents", label: "Агенты" },
+	{ id: "tools", label: "Инструменты" },
+	{ id: "prompts", label: "Промпты" },
+];
 
 export function App() {
-  return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
-  );
+	const [tab, setTab] = useState<Tab>("agents");
+
+	return (
+		<div style={{ minHeight: "100vh", background: "#f6f7fb" }}>
+			<header
+				style={{
+					display: "flex",
+					alignItems: "center",
+					gap: 24,
+					padding: "12px 20px",
+					background: "#fff",
+					borderBottom: "1px solid #e5e7eb",
+				}}
+			>
+				<strong style={{ fontSize: 20 }}>vabase</strong>
+				<nav style={{ display: "flex", gap: 8 }}>
+					{tabs.map((item) => (
+						<button
+							key={item.id}
+							onClick={() => setTab(item.id)}
+							style={{
+								padding: "8px 14px",
+								border: "1px solid #d1d5db",
+								borderRadius: 6,
+								background: tab === item.id ? "#2563eb" : "#fff",
+								color: tab === item.id ? "#fff" : "#111827",
+								cursor: "pointer",
+							}}
+						>
+							{item.label}
+						</button>
+					))}
+				</nav>
+			</header>
+
+			<main style={{ padding: 16 }}>
+				{tab === "agents" && <Agents />}
+				{tab === "tools" && <Tools />}
+				{tab === "prompts" && <Prompts />}
+			</main>
+		</div>
+	);
 }

@@ -1,9 +1,0 @@
-# Dev-only override: publishes PostgreSQL and Redis on non-default host ports so
-# the API and tests can run outside Docker without clashing with a local database.
-services:
-  db:
-    ports:
-      - "5433:5432"
-  redis:
-    ports:
-      - "6380:6379"

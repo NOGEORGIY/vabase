@@ -11,10 +11,6 @@ class Settings(BaseSettings):
     api_prefix: str = "/api/v1"
     database_url: str = "sqlite:///./vabase.db"
     redis_url: str = "redis://localhost:6379/0"
-    session_ttl_hours: int = 72
-    demo_password: str = "vabase"
-    seed_demo: bool = True
-    cors_origins: str = "*"
 
 
 @lru_cache
