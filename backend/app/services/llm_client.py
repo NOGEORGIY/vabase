@@ -2,23 +2,32 @@ from __future__ import annotations
 
 from gigachat import GigaChat
 
+import os
 import time
 import redis
 import requests
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+r = redis.Redis.from_url(
+    os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+    decode_responses=True,
+)
+
 
 class LLMClient:
-    def __init__(self, credentials: str, model: str, timeout: int = 120 ):
+    def __init__(self, credentials: str, model: str, timeout: int = 120):
         self.credentials = credentials
         self.model = model
         self.timeout = timeout
-    def get_cached_giga_token(self) -> None:
-        token = r.get("giga_token")
-        if token:
-            return token
+
+    def get_cached_giga_token(self) -> str:
+        try:
+            token = r.get("giga_token")
+            if token:
+                return token
+        except Exception:
+            pass
 
         giga = GigaChat(
             base_url="https://api.giga.chat/v1",
@@ -31,7 +40,10 @@ class LLMClient:
         ttl_seconds = int(giga_resp.expires_at / 1000 - time.time()) - 30
 
         if ttl_seconds > 0:
-            r.set("giga_token", token, ex=ttl_seconds)
+            try:
+                r.set("giga_token", token, ex=ttl_seconds)
+            except Exception:
+                pass
 
         return token
     def get_balance(self) -> str:
@@ -57,6 +69,7 @@ class LLMClient:
         }
         if functions:
             payload["functions"] = functions
+            payload["function_call"] = "auto"
 
         resp = requests.post(
             'https://api.giga.chat/v1/chat/completions',
@@ -65,5 +78,6 @@ class LLMClient:
             timeout=self.timeout,
             verify=False,
         )
-        resp.raise_for_status()
+        if not resp.ok:
+            raise RuntimeError(f"GigaChat {resp.status_code}: {resp.text[:500]}")
         return resp.json()["choices"][0]["message"]

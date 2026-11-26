@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import prompts, tools
+from app.api import prompts, runs, tools
 from app.config import settings
 from app.database import init_db
 
@@ -36,6 +36,7 @@ app.add_middleware(
 api_router = APIRouter(prefix=settings.api_prefix)
 api_router.include_router(tools.router)
 api_router.include_router(prompts.router)
+api_router.include_router(runs.router)
 app.include_router(api_router)
 
 

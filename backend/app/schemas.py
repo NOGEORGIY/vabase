@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ORMModel(BaseModel):
@@ -11,6 +13,14 @@ class ToolIn(BaseModel):
     name: str
     description: str = ""
     endpoint: str = ""
+    input_schema: dict[str, Any] = Field(default_factory=dict)
+
+
+class ToolUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    endpoint: str | None = None
+    input_schema: dict[str, Any] | None = None
 
 
 class ToolOut(ORMModel):
@@ -18,6 +28,7 @@ class ToolOut(ORMModel):
     name: str
     description: str
     endpoint: str
+    input_schema: dict[str, Any]
 
 
 class PromptIn(BaseModel):

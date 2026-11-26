@@ -7,7 +7,7 @@ MAX_LINES = 50                       # максимальное количест
 
 EXCLUDE_DIRS = [".git", "venv", ".venv", "__pycache__", "node_modules"]
 
-def grep(pattern: str, path: str = ".") -> str:
+def grep(pattern: str, path: str = ".", sudo: bool = False) -> str:
     """Ищет pattern в файлах репозитория. Возвращает строки вида файл:строка:текст."""
     clean_path = path.lstrip("/\\") or "."
     target = (REPO_ROOT / clean_path).resolve()
@@ -18,7 +18,8 @@ def grep(pattern: str, path: str = ".") -> str:
     if not target.exists():
         return f"Ошибка: путь {path} не найден"
 
-    cmd = ["grep", "-rnHIE"]
+    cmd = ["sudo", "-n"] if sudo else []
+    cmd += ["grep", "-rnHIE"]
     cmd += [f"--exclude-dir={d}" for d in EXCLUDE_DIRS]
     cmd += ["--", pattern, str(target)]
 
@@ -73,6 +74,10 @@ GREP_SCHEMA = {
                 "path": {
                     "type": "string",
                     "description": "Папка или файл внутри проекта, по умолчанию весь проект"
+                },
+                 "sudo": {
+                    "type": "boolean",
+                    "description": "Запустить поиск с правами root и разрешить выход за пределы папки проекта (по умолчанию false)"
                 }
             },
             "required": ["pattern"],

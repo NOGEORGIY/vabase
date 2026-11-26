@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from app.database import SessionLocal
 from app.models import Tool
-from app.schemas import ToolIn, ToolOut
+from app.schemas import ToolIn, ToolOut, ToolUpdate
 
 router = APIRouter(prefix="/tools", tags=["tools"])
 
@@ -27,8 +27,22 @@ def create_tool(payload: ToolIn) -> ToolOut:
             name=payload.name,
             description=payload.description,
             endpoint=payload.endpoint,
+            input_schema=payload.input_schema,
         )
         db.add(tool)
+        db.commit()
+        db.refresh(tool)
+        return ToolOut.model_validate(tool)
+
+
+@router.patch("/{tool_id}", response_model=ToolOut)
+def update_tool(tool_id: str, payload: ToolUpdate) -> ToolOut:
+    with SessionLocal() as db:
+        tool = db.get(Tool, tool_id)
+        if tool is None:
+            raise HTTPException(status_code=404, detail="Tool not found")
+        for field, value in payload.model_dump(exclude_unset=True).items():
+            setattr(tool, field, value)
         db.commit()
         db.refresh(tool)
         return ToolOut.model_validate(tool)
